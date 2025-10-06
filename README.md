@@ -1,0 +1,33 @@
+Disclaimer: This code is a work in progress, and is not that powerful yet.
+
+C++ version of [`Quick_Sim.py`](https://github.com/sligocki/busy-beaver/blob/main/Code/Quick_Sim.py).
+
+## Windows installation
+
+Go to this repo's directory, then run:
+
+```
+wsl
+sudo apt update
+sudo apt upgrade
+sudo apt install make g++
+make
+```
+
+## Example 1
+
+TM that halts in 17825053 steps:
+```
+./quick_sim 1RB1RA_1RC0RF_0RD---_1LE1LF_1LF1LE_1RA0LD 6
+```
+
+`./quick_sim` took ~100ms. `Quick_Sim.py` took ~8.2s.
+
+## Example 2
+
+TM that halts in ~10^1311493 steps:
+```
+./quick_sim 1RB---_1RC1RB_1RD0RA_1LE0RC_0LF0LD_1LB0LF 4
+```
+
+`./quick_sim` cannot do this yet. `Quick_Sim.py` took several hours.
