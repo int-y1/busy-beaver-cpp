@@ -1,5 +1,7 @@
 CXX = g++
 CXXFLAGS = -O2 -std=c++20
+# todo: does -lgmpxx do anything?
+LDFLAGS = -lgmp -lgmpxx
 
 SRCS := $(wildcard src/*.cpp)
 OBJS := $(patsubst src/%.cpp,build/%.o,$(SRCS))
@@ -8,7 +10,7 @@ OBJS := $(patsubst src/%.cpp,build/%.o,$(SRCS))
 all: build_dir $(OBJS) quick_sim
 
 quick_sim: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o quick_sim
+	$(CXX) $(CXXFLAGS) $(OBJS) -o quick_sim $(LDFLAGS)
 
 build_dir:
 	mkdir -p build

@@ -2,7 +2,6 @@
 #include "tape.h"
 #include "turing_machine.h"
 #include "x_integer.h"
-#include <set>
 
 struct Simulator {
     BlockMacroMachine machine;

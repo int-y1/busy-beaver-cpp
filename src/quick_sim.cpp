@@ -4,7 +4,6 @@
 #include "simulator.h"
 #include "turing_machine.h"
 #include <cassert>
-#include <cstring>
 #include <iostream>
 
 void run(

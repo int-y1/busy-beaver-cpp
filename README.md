@@ -10,7 +10,7 @@ Go to this repo's directory, then run:
 wsl
 sudo apt update
 sudo apt upgrade
-sudo apt install make g++
+sudo apt install make g++ libgmp-dev
 make
 ```
 
@@ -21,7 +21,7 @@ TM that halts in 17825053 steps:
 ./quick_sim 1RB1RA_1RC0RF_0RD---_1LE1LF_1LF1LE_1RA0LD 6
 ```
 
-`./quick_sim` took ~100ms. `Quick_Sim.py` took ~8.2s.
+`./quick_sim` took ~260ms. `Quick_Sim.py` took ~8.2s.
 
 ## Example 2
 

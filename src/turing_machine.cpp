@@ -1,9 +1,6 @@
 #include "turing_machine.h"
 #include <cassert>
-#include <set>
 #include <tuple>
-
-#include <cstdlib>
 
 SimpleMachine tmFromQuintuples(
     const std::vector<std::tuple<int,int,int,Dir,int>> &quints,
