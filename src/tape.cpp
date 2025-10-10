@@ -1,8 +1,8 @@
 #include "tape.h"
 #include <iostream>
 
-std::string RepeatedSymbol::to_string(const std::vector<std::string> &symbol_to_string) const {
-    std::string s=symbol_to_string[this->symbol];
+std::string RepeatedSymbol::to_string(std::function<std::string(int)> symbol_to_string) const {
+    std::string s=symbol_to_string(this->symbol);
     s+="^";
     s+=this->num.to_string();
     return s;
@@ -45,8 +45,8 @@ void ChainTape::apply_single_move(int new_symbol,Dir new_dir) {
     this->dir=new_dir;
 }
 
-const int CUTOFF=3;
-void ChainTape::print_with_state(int state,const std::vector<std::string> &symbol_to_string,bool full) const {
+const int CUTOFF=3; // todo: increase to 30
+void ChainTape::print_with_state(int state,std::function<std::string(int)> symbol_to_string,bool full) const {
     XInteger blocks{0};
     if (full) {
         for (auto &sym:this->tape[0]) {

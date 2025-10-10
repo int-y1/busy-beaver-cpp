@@ -1,6 +1,8 @@
 #pragma once
 #include "transition.h"
+#include <functional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // The most general Turing Machine based off of a transition table
@@ -35,22 +37,16 @@ struct BlockMacroMachine {
 
     int num_states;
     int num_symbols;
-    // A macro transition table. Use hashTransTableArgs to get the index.
-    std::vector<Transition> trans_table;
+    // A lazy evaluation hashed macro transition table
+    std::unordered_map<int,Transition> trans_table;
 
     int init_state;
     int init_symbol;
     Dir init_dir;
 
-    std::vector<std::string> symbol_to_string;
-
     BlockMacroMachine(SimpleMachine base_machine, int block_size);
 
-    int hashTransTableArgs(int state,int symbol,Dir dir) const {
-        return state*this->num_symbols*2+symbol*2+dir;
-    }
+    std::function<std::string(int)> symbol_to_string() const;
 
-    const Transition &get_trans_object(int symbol_in,int state_in,Dir dir) const {
-        return this->trans_table.at(hashTransTableArgs(state_in,symbol_in,dir));
-    }
+    const Transition& get_trans_object(int symbol_in,int state_in,Dir dir);
 };

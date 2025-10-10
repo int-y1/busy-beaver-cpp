@@ -132,32 +132,31 @@ BlockMacroMachine::BlockMacroMachine(SimpleMachine base_machine, int block_size)
         init_symbol{base_machine.init_symbol}, // sketchy? ok for now, because it's always 0
         init_dir{base_machine.init_dir} {
     for (int i=0; i<block_size; i++) {
+        assert(2e9/this->num_symbols/base_machine.num_symbols>=1); // prevent int overflow
         this->num_symbols*=base_machine.num_symbols;
-        assert(this->num_symbols<1e6); // prevent memory issues with trans_table
     }
+    assert(2e9/this->num_states/this->num_symbols/2>=1); // prevent int overflow in get_trans_object
+}
 
-    for (int symbol=0; symbol<this->num_symbols; symbol++) {
+std::function<std::string(int)> BlockMacroMachine::symbol_to_string() const {
+    return [block_size=this->block_size,num_symbols=this->base_machine.num_symbols](int symbol) {
         std::string s;
-        int symbol2=symbol;
-        for (int i=0; i<this->block_size; i++) {
-            s.push_back('0'+symbol2%this->base_machine.num_symbols);
-            symbol2/=this->base_machine.num_symbols;
+        for (int i=0; i<block_size; i++) {
+            s.push_back('0'+symbol%num_symbols);
+            symbol/=num_symbols;
         }
-        this->symbol_to_string.push_back(s);
-    }
+        return s;
+    };
+}
 
-    // state, symbol, dir
-    for (int state_in=0; state_in<base_machine.num_states; state_in++) {
-        for (int symbol_in=0; symbol_in<this->num_symbols; symbol_in++) {
-            for (Dir dir_in:{LEFT,RIGHT}) {
-                std::vector<int> tape;
-                for (int h=symbol_in,i=0; i<block_size; h/=base_machine.num_symbols,i++) {
-                    tape.push_back(h%base_machine.num_symbols);
-                }
-                int pos=(dir_in==RIGHT ? 0 : block_size-1);
-                Transition trans=sim_limited(base_machine,state_in,tape,dir_in,pos);
-                this->trans_table.push_back(trans);
-            }
-        }
+const Transition& BlockMacroMachine::get_trans_object(int symbol_in,int state_in,Dir dir) {
+    int hash=symbol_in*this->num_states*2+state_in*2+dir;
+    if (auto it=this->trans_table.find(hash); it!=this->trans_table.end()) return it->second;
+
+    std::vector<int> tape;
+    for (int h=symbol_in,i=0; i<block_size; h/=base_machine.num_symbols,i++) {
+        tape.push_back(h%base_machine.num_symbols);
     }
+    int pos=(dir==RIGHT ? 0 : block_size-1);
+    return this->trans_table[hash]=sim_limited(base_machine,state_in,tape,dir,pos);
 }

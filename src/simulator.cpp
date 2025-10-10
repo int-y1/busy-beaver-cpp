@@ -56,7 +56,7 @@ void Simulator::step() {
 void Simulator::print_self(bool full) const {
     //num_loops,num_macro_moves,num_chain_moves,num_rule_moves
     std::cout<<"\n";
-    this->tape.print_with_state(this->state,this->machine.symbol_to_string,full);
+    this->tape.print_with_state(this->state,this->machine.symbol_to_string(),full);
     std::cout<<"Elapsed time: "<<(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch().count()-this->start_time)/1e9<<"\n";
     std::cout<<"Total steps: "<<this->step_num.to_string()<<"\n";
     std::cout<<"Loops: "<<this->num_loops<<"\n";

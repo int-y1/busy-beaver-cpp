@@ -13,11 +13,13 @@ void run(
     BlockMacroMachine machine2(machine,block_size);
     Simulator sim(machine2);
     sim.print_self();
+    long long next_print=1000000;
     for(long long total_loops=0; sim.op_state==RUNNING; total_loops++) {
         sim.step();
-        if (sim.num_loops%100000000==0) {
+        if (sim.num_loops>=next_print) {
             sim.print_self();
-            if (sim.num_loops==1000000000) break; // todo: remove
+            next_print=next_print*6/5;
+            if (sim.num_loops>=1000000000) break; // todo: remove
         }
     }
 
@@ -32,6 +34,5 @@ int main(int argc, char* argv[]) {
     }
     SimpleMachine machine = parseTM(std::string(argv[1],strlen(argv[1])));
     int block_size=std::stoi(argv[2]);
-    assert(1<=block_size && block_size<=20); // todo: remove this
     run(std::move(machine),block_size);
 }
