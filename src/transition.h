@@ -1,4 +1,5 @@
 #pragma once
+#include "x_integer.h"
 #include <vector>
 
 enum Dir {
@@ -22,5 +23,5 @@ struct Transition {
     int symbol_out;
     int state_out; // not an optional<int> :(
     Dir dir_out;
-    int num_base_steps;
+    XInteger num_base_steps;
 };

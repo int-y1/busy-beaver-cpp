@@ -29,5 +29,5 @@ struct ChainTape {
     // Apply a single macro step. del old symbol, push new one.
     void apply_single_move(int new_symbol,Dir new_dir);
 
-    void print_with_state(int state,std::function<std::string(int)> symbol_to_string,bool full) const;
+    void print_with_state(std::string head,std::function<std::string(int)> symbol_to_string,bool full) const;
 };

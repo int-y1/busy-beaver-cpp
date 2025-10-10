@@ -11,15 +11,16 @@ void run(
     int block_size
 ) {
     BlockMacroMachine machine2(machine,block_size);
-    Simulator sim(machine2);
+    BacksymbolMacroMachine machine3(machine2);
+    Simulator sim(machine3);
     sim.print_self();
-    long long next_print=1000000;
+    long long next_print=10000000;
     for(long long total_loops=0; sim.op_state==RUNNING; total_loops++) {
         sim.step();
         if (sim.num_loops>=next_print) {
             sim.print_self();
             next_print=next_print*6/5;
-            if (sim.num_loops>=1000000000) break; // todo: remove
+            //if (sim.num_loops>=1000000000) break; // todo: remove
         }
     }
 

@@ -46,7 +46,7 @@ void ChainTape::apply_single_move(int new_symbol,Dir new_dir) {
 }
 
 const int CUTOFF=3; // todo: increase to 30
-void ChainTape::print_with_state(int state,std::function<std::string(int)> symbol_to_string,bool full) const {
+void ChainTape::print_with_state(std::string head,std::function<std::string(int)> symbol_to_string,bool full) const {
     XInteger blocks{0};
     if (full) {
         for (auto &sym:this->tape[0]) {
@@ -64,10 +64,7 @@ void ChainTape::print_with_state(int state,std::function<std::string(int)> symbo
             i++;
         }
     }
-    if (this->dir==LEFT) std::cout<<"<";
-    if (state<0) std::cout<<"Z";
-    else std::cout<<(char)('A'+state);
-    if (this->dir==RIGHT) std::cout<<">";
+    std::cout<<head;
     if (full) {
         for (auto it=this->tape[1].rbegin(); it!=this->tape[1].rend(); ++it) {
             if (!it->num.is_inf()) blocks=blocks+it->num;

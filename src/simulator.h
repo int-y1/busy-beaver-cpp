@@ -4,7 +4,7 @@
 #include "x_integer.h"
 
 struct Simulator {
-    BlockMacroMachine machine;
+    BacksymbolMacroMachine machine; // todo: support other machines
     int state;
     Dir dir;
 
@@ -23,7 +23,7 @@ struct Simulator {
     long long num_loops=0,num_macro_moves=0,num_chain_moves=0,num_rule_moves=0;
     std::string inf_reason; // doesn't need to be enum yet
 
-    Simulator(BlockMacroMachine machine);
+    Simulator(BacksymbolMacroMachine machine); // todo: support other machines
 
     // Perform an atomic transition or chain step.
     void step();
