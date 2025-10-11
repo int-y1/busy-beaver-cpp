@@ -76,7 +76,7 @@ std::pair<Transition,std::vector<int>> sim_limited(
     Dir dir,
     int pos
 ) {
-    XInteger num_base_steps{0_mpz}; // num_base_steps in the bottom level Simple_Machine.
+    XInteger num_base_steps{mpz0}; // num_base_steps in the bottom level Simple_Machine.
 
     // Once we run long enough use this to detect repeat-in-place.
     // If `old_config` is ever repeated, we know it will repeat forever.

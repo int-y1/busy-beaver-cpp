@@ -30,7 +30,7 @@ TM that halts in 987522842126 steps:
 ./quick_sim 1RB2LA1RA_1RC2RB0RC_1LA1RZ1LA 2
 ```
 
-`./quick_sim` took ~640ms. `Quick_Sim.py` took ~14s.
+`./quick_sim` took ~590ms. `Quick_Sim.py` took ~14s.
 
 ## Example 3
 

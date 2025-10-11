@@ -12,7 +12,7 @@ void run(
 ) {
     BlockMacroMachine machine2(machine,block_size);
     BacksymbolMacroMachine machine3(machine2);
-    Simulator sim(machine3);
+    Simulator sim(&machine3);
     sim.print_self();
     long long next_print=10000000;
     for(long long total_loops=0; sim.op_state==RUNNING; total_loops++) {
