@@ -1,12 +1,9 @@
 #include "prover.h"
-
-typedef std::pair<int,bool> StrippedSymbol; // stripped version of RepeatedSymbol
+#include "simulator.h"
 
 StrippedSymbol stripped_info(const RepeatedSymbol &block) {
     return {block.symbol,block.num.num==mpz1};
 }
-
-typedef std::tuple<int,Dir,std::vector<StrippedSymbol>,std::vector<StrippedSymbol>> StrippedConfig;
 
 // Return a generalized configuration removing the non-1 repetition counts from the tape.
 StrippedConfig strip_config(int state,const ChainTape &tape) {
@@ -16,15 +13,79 @@ StrippedConfig strip_config(int state,const ChainTape &tape) {
     return {state,tape.dir,s0,s1};
 }
 
+// Currently, we try to prove a rule we've seen happen twice (not necessarily
+// consecutive) with the same num of loops (last_delta or delta_loops).
+bool PastConfig::log_config(long long loop_num) {
+    // First time we see stripped_config, store loop_num.
+    if (this->last_loop_num==0) {
+        this->last_loop_num=loop_num;
+        this->times_seen++;
+        return 0;
+    }
+    // Next store last_delta. If we have a last_delta but it hasn't repeated,
+    // then update the new delta. (Note: We can only prove rules that take
+    // the same number of loops each time.)
+    long long delta=loop_num-this->last_loop_num;
+    if (!this->last_delta || this->last_delta!=delta) {
+        this->last_delta=delta;
+        this->last_loop_num=loop_num;
+        this->times_seen++;
+        return 0;
+    }
+    // Now we can finally try a proof.
+    return 1;
+}
+
 ProofSystem::ProofSystem(BacksymbolMacroMachine *machine) :
-    machine{machine},
-    past_configs{0} {}
+    machine{machine} {}
 
 // Log this configuration into the memory and check if it is similar to a
 // past one. Apply rule if possible.
 ProverResult ProofSystem::log_and_apply(
     const ChainTape &tape, int state, const XInteger &step_num, long long loop_num
 ) {
-    //StrippedConfig stripped_config=strip_config(state,tape);
+    return ProverResultNothingToDo{}; // todo: remove when ready
+    if (tape.tape[0].size()+tape.tape[1].size()>50) {
+        return ProverResultNothingToDo{}; // todo: prove rules about big tapes
+    }
+    StrippedConfig stripped_config=strip_config(state,tape);
+    FullConfig full_config{state,tape,loop_num};
+
+    // Try to apply an already proven rule.
+    if (auto result=this->try_apply_a_rule(stripped_config,full_config); result.has_value()) {
+        return result.value();
+    }
+
+    // Otherwise log it into past_configs and see if we should try and prove a new rule.
+    PastConfig past_config=this->past_configs[stripped_config];
+    if (past_config.log_config(loop_num)) {
+        // We see enough of a pattern to try and prove a rule.
+        auto rule=this->prove_rule(stripped_config,full_config,loop_num-past_config.last_loop_num);
+        if (!rule.has_value()) this->num_failed_proofs++;
+        else {
+            // add_rule
+        }
+    }
+
     return ProverResultNothingToDo{};
+}
+
+std::optional<ProverResult> ProofSystem::try_apply_a_rule(
+    const StrippedConfig &stripped_config,const FullConfig &full_config
+) {
+    return std::nullopt;
+}
+
+std::optional<bool> ProofSystem::prove_rule(
+    const StrippedConfig &stripped_config,const FullConfig &full_config,long long delta_loop
+) {
+    // Unpack configurations
+    auto &[new_state,new_tape,new_loop_num]=full_config;
+    std::map<int,XInteger> min_val; // Notes the minimum value exponents with each unknown take.
+    // Create the limited simulator with limited or no prover.
+    GeneralSimulator gen_sim(this->machine,new_state,GeneralChainTape(new_tape,min_val));
+
+    int max_offset_touched[2]={0,0};
+    // Run the simulator
+    return std::nullopt;
 }

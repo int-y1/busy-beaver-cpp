@@ -168,7 +168,6 @@ BacksymbolMacroMachine::BacksymbolMacroMachine(BlockMacroMachine base_machine) :
         init_dir{base_machine.init_dir} {}
 
 std::string BacksymbolMacroMachine::head_to_string(int state,Dir dir) const {
-    printf("head_to_string %d %d %d\n",state,this->num_states,dir);
     char base_state;
     if ((state+1)%this->num_states==0) { // halt (this is a bit sketchy)
         base_state='Z';

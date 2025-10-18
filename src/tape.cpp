@@ -84,3 +84,27 @@ void ChainTape::print_with_state(std::string head,std::function<std::string(int)
     std::cout<<"\n";
     std::cout<<"Total blocks: "<<blocks.to_string()<<"\n";
 }
+
+// Generalize, eg. (abc)^5 -> (abc)^(n+5)
+// Blocks with one rep are not generalized, eg. (abc)^1 -> (abc)^1
+VarPlusXInteger get_general_num(const XInteger& num,std::map<int,XInteger>& min_val) {
+    if (num.is_inf() || num.num==mpz1) return {std::nullopt,num};
+    int v=min_val.size();
+    min_val[v]=num;
+    return {v,num};
+}
+
+GeneralChainTape::GeneralChainTape(const ChainTape& chain_tape,std::map<int,XInteger>& min_val) :
+    dir{chain_tape.dir} {
+        for (Dir direction:{LEFT,RIGHT}) {
+            int offset=chain_tape.tape[direction].size();
+            for (auto &block:chain_tape.tape[direction]) {
+                // Mark all starting blocks with IDs to indicate their offset from the
+                // starting TM head. If we allow Limited_Diff_Rules, then we will use
+                // this to detect which blocks were touched.
+                GeneralRepeatedSymbol new_block{offset,block.symbol,get_general_num(block.num,min_val)};
+                offset--;
+                this->tape[direction].push_back(new_block);
+            }
+        }
+    }

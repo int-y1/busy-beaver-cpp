@@ -85,3 +85,11 @@ void Simulator::print_self(bool full) const {
     std::cout<<"Chain moves: "<<this->num_chain_moves<<"\n";
     std::cout<<"Rule moves: "<<this->num_rule_moves<<"\n";
 }
+
+GeneralSimulator::GeneralSimulator(BacksymbolMacroMachine *machine,int state,GeneralChainTape tape) :
+    machine{machine},
+    state{state},
+    dir{tape.dir},
+    tape{tape} {
+        //
+    }
