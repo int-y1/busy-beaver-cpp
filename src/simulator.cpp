@@ -13,6 +13,7 @@ Simulator::Simulator(BacksymbolMacroMachine *machine) :
         //
     }
 
+// todo: need to keep Simulator::step and GeneralSimulator::step in sync
 void Simulator::step() {
     if (this->op_state != RUNNING) return;
     this->old_step_num=this->step_num;
@@ -93,3 +94,42 @@ GeneralSimulator::GeneralSimulator(BacksymbolMacroMachine *machine,int state,Gen
     tape{tape} {
         //
     }
+
+// todo: need to keep Simulator::step and GeneralSimulator::step in sync
+void GeneralSimulator::step() {
+    if (this->op_state != RUNNING) return;
+    this->old_step_num=this->step_num;
+    // Note: We increment the number of loops early to take care of all the
+    // places step() could early-return.
+    this->num_loops++;
+
+    // Get current symbol
+    int cur_symbol=this->tape.get_top_symbol();
+    // Lookup TM transition rule
+    Transition trans=this->machine->get_trans_object(cur_symbol,this->state,this->dir);
+    this->op_state=trans.condition;
+    this->op_details=trans.condition_details;
+    // Apply transition
+    if (this->op_state==INF_REPEAT) {
+        this->inf_reason = "INF_MACRO_STEP";
+    }
+    // Chain move
+    else if (trans.state_out==this->state && trans.dir_out == this->dir && this->op_state==RUNNING) {
+        VarPlusXInteger num_reps=this->tape.apply_chain_move(trans.symbol_out);
+        if (num_reps.num.is_inf()) {
+            this->op_state=INF_REPEAT;
+            this->inf_reason="INF_CHAIN_STEP";
+            return;
+        }
+        // Don't need to change state or direction
+        this->step_num=this->step_num+num_reps*trans.num_base_steps;
+    }
+    // Simple move
+    else if (this->op_state!=OVER_STEPS_IN_MACRO) {
+        this->tape.apply_single_move(trans.symbol_out,trans.dir_out);
+        this->state=trans.state_out;
+        this->dir=trans.dir_out;
+        this->step_num=this->step_num+trans.num_base_steps;
+    }
+    else assert(0); // unreachable?
+}

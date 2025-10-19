@@ -30,7 +30,7 @@ void ChainTape::apply_single_move(int new_symbol,Dir new_dir) {
         // Decrement (delete one symbol)
         top.num=top.num-1; // yes i can decrement infinity. it is ok.
         // If there are none left, remove from the tape
-        if (top.num==XInteger{0}) half_tape.pop_back();
+        if (top.num.num==mpz0) half_tape.pop_back();
     }
     {
         // Push new symbol
@@ -88,10 +88,10 @@ void ChainTape::print_with_state(std::string head,std::function<std::string(int)
 // Generalize, eg. (abc)^5 -> (abc)^(n+5)
 // Blocks with one rep are not generalized, eg. (abc)^1 -> (abc)^1
 VarPlusXInteger get_general_num(const XInteger& num,std::map<int,XInteger>& min_val) {
-    if (num.is_inf() || num.num==mpz1) return {std::nullopt,num};
+    if (num.is_inf() || num.num==mpz1) return {{},num};
     int v=min_val.size();
     min_val[v]=num;
-    return {v,num};
+    return {{{v,{mpz1}}},num};
 }
 
 GeneralChainTape::GeneralChainTape(const ChainTape& chain_tape,std::map<int,XInteger>& min_val) :
@@ -108,3 +108,40 @@ GeneralChainTape::GeneralChainTape(const ChainTape& chain_tape,std::map<int,XInt
             }
         }
     }
+
+VarPlusXInteger GeneralChainTape::apply_chain_move(int new_symbol) {
+    // Pop off old sequence
+    VarPlusXInteger num=this->tape[this->dir].back().num;
+    // Can't pop off infinite symbols, TM will never halt
+    if (num.num.is_inf()) return num;
+    this->tape[this->dir].pop_back();
+    // Push on new one behind us
+    std::vector<GeneralRepeatedSymbol> &half_tape=this->tape[!this->dir];
+    GeneralRepeatedSymbol &top=half_tape.back();
+    if (top.symbol==new_symbol) top.num=top.num+num;
+    else half_tape.push_back({0,new_symbol,num});
+    return num;
+}
+
+void GeneralChainTape::apply_single_move(int new_symbol,Dir new_dir) {
+    {
+        // Delete old symbol
+        std::vector<GeneralRepeatedSymbol> &half_tape=this->tape[this->dir];
+        GeneralRepeatedSymbol &top=half_tape.back();
+        // Decrement (delete one symbol)
+        top.num=top.num-1; // yes i can decrement infinity. it is ok.
+        // If there are none left, remove from the tape
+        if (top.num.var.empty() && top.num.num.num==mpz0) half_tape.pop_back();
+    }
+    {
+        // Push new symbol
+        std::vector<GeneralRepeatedSymbol> &half_tape=this->tape[!new_dir];
+        GeneralRepeatedSymbol &top=half_tape.back();
+        // If it is identical to the top symbol, combine them.
+        if (top.symbol==new_symbol) top.num=top.num+1;
+        // Otherwise, just add it separately.
+        else half_tape.push_back({new_symbol,1});
+    }
+    // Update direction
+    this->dir=new_dir;
+}

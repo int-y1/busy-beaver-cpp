@@ -38,21 +38,21 @@ struct GeneralSimulator {
     int state;
     Dir dir;
 
-    XInteger old_step_num{0},step_num{0};
+    VarPlusXInteger old_step_num{{},0},step_num{{},0};
 
     GeneralChainTape tape;
 
     // Operation state (e.g. running, halted, proven-infinite, ...)
     RunCondition op_state=RUNNING;
+    std::vector<int> op_details;
 
     // Stats
     long long num_loops=0;
+    std::string inf_reason; // doesn't need to be enum yet
 
     // todo: support other machines
     GeneralSimulator(BacksymbolMacroMachine *machine,int state,GeneralChainTape tape);
 
     // Perform an atomic transition or chain step.
     void step();
-
-    void print_self(bool full=false) const;
 };

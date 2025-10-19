@@ -87,5 +87,22 @@ std::optional<bool> ProofSystem::prove_rule(
 
     int max_offset_touched[2]={0,0};
     // Run the simulator
+    while (gen_sim.num_loops<delta_loop) {
+        const GeneralRepeatedSymbol& block=gen_sim.tape.get_top_block();
+        if (block.num.num.num==mpz0) {
+            // This corresponds to a block which looks like 2^n+0 .
+            // In this situation, we can no longer generalize over all n >= 0.
+            // Instead the simulator will act differently if n == 0 or n > 0.
+            return std::nullopt;
+        }
+        // Before step: Record the block we are looking at (about to read).
+        Dir cur_dir=gen_sim.tape.dir;
+        int facing_offset=block.id;
+        if (facing_offset) {
+            max_offset_touched[cur_dir]=std::max(max_offset_touched[cur_dir],facing_offset);
+        }
+        gen_sim.step();
+        // After step: Record the block behind us (which we just wrote to).
+    }
     return std::nullopt;
 }

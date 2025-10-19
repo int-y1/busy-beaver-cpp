@@ -33,15 +33,10 @@ struct ChainTape {
     void print_with_state(std::string head,std::function<std::string(int)> symbol_to_string,bool full) const;
 };
 
-struct VarPlusXInteger {
-    std::optional<int> var; // index to min_val
-    XInteger num;
-};
-
 struct GeneralRepeatedSymbol {
     int id;
     int symbol;
-    VarPlusXInteger num;
+    VarPlusXInteger num; // todo: this causes ".num.num.num" chain in the code
 };
 
 struct GeneralChainTape {
@@ -50,16 +45,18 @@ struct GeneralChainTape {
 
     GeneralChainTape(const ChainTape& chain_tape,std::map<int,XInteger>& min_val);
 
-    /*
+    const GeneralRepeatedSymbol& get_top_block() const {
+        return this->tape[this->dir].back();
+    }
+
     int get_top_symbol() const {
         return this->tape[this->dir].back().symbol;
     }
 
     // Apply a chain step which replaces an entire string of symbols.
     // Returns the number of symbols replaced.
-    XInteger apply_chain_move(int new_symbol);
+    VarPlusXInteger apply_chain_move(int new_symbol);
 
     // Apply a single macro step. del old symbol, push new one.
     void apply_single_move(int new_symbol,Dir new_dir);
-    */
 };
