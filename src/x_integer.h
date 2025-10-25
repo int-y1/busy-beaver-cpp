@@ -17,6 +17,11 @@ struct XInteger {
     bool operator==(const XInteger &other) const {
         return this->num==other.num;
     }
+    bool operator<(const XInteger &other) const {
+        if (this->is_inf()) return false;
+        if (other.is_inf()) return true;
+        return this->num.value()<other.num.value();
+    }
     XInteger operator+(int other) const {
         if (this->is_inf()) return {};
         return {this->num.value()+other};
@@ -30,6 +35,12 @@ struct XInteger {
         if (this->is_inf()) return {};
         if (this->num.value()<other) assert(0);
         return {this->num.value()-other};
+    }
+    XInteger operator-(const XInteger &other) const {
+        if (other.is_inf()) assert(0);
+        if (this->is_inf()) return {};
+        if (this->num.value()<other.num.value()) assert(0);
+        return {this->num.value()-other.num.value()};
     }
     XInteger operator*(int other) const {
         if (other==0) return {mpz0};
@@ -78,5 +89,19 @@ struct VarPlusXInteger {
         std::map<int,XInteger> var2=this->var;
         for (auto &p:var2) p.second=p.second*other;
         return {var2,this->num*other};
+    }
+
+    std::string to_string() const {
+        std::string out;
+        if (!this->var.empty()) out+="(";
+        for (auto& p:this->var) {
+            out+=p.second.to_string();
+            out+="*v";
+            out+=std::to_string(p.first);
+            out+="+";
+        }
+        out+=this->num.to_string();
+        if (!this->var.empty()) out+=")";
+        return out;
     }
 };

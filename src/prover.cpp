@@ -5,11 +5,22 @@ StrippedSymbol stripped_info(const RepeatedSymbol &block) {
     return {block.symbol,block.num.num==mpz1};
 }
 
+StrippedSymbol gen_stripped_info(const GeneralRepeatedSymbol &block) {
+    return {block.symbol,block.num.var.empty() && block.num.num.num==mpz1};
+}
+
 // Return a generalized configuration removing the non-1 repetition counts from the tape.
 StrippedConfig strip_config(int state,const ChainTape &tape) {
     std::vector<StrippedSymbol> s0,s1;
     std::transform(tape.tape[0].begin(),tape.tape[0].end(),std::back_inserter(s0),stripped_info);
     std::transform(tape.tape[1].begin(),tape.tape[1].end(),std::back_inserter(s1),stripped_info);
+    return {state,tape.dir,s0,s1};
+}
+
+StrippedConfig gen_strip_config(int state,const GeneralChainTape &tape) {
+    std::vector<StrippedSymbol> s0,s1;
+    std::transform(tape.tape[0].begin(),tape.tape[0].end(),std::back_inserter(s0),gen_stripped_info);
+    std::transform(tape.tape[1].begin(),tape.tape[1].end(),std::back_inserter(s1),gen_stripped_info);
     return {state,tape.dir,s0,s1};
 }
 
@@ -57,7 +68,7 @@ ProverResult ProofSystem::log_and_apply(
     }
 
     // Otherwise log it into past_configs and see if we should try and prove a new rule.
-    PastConfig past_config=this->past_configs[stripped_config];
+    PastConfig& past_config=this->past_configs[stripped_config];
     if (past_config.log_config(loop_num)) {
         // We see enough of a pattern to try and prove a rule.
         auto rule=this->prove_rule(stripped_config,full_config,loop_num-past_config.last_loop_num);
@@ -83,7 +94,8 @@ std::optional<bool> ProofSystem::prove_rule(
     auto &[new_state,new_tape,new_loop_num]=full_config;
     std::map<int,XInteger> min_val; // Notes the minimum value exponents with each unknown take.
     // Create the limited simulator with limited or no prover.
-    GeneralSimulator gen_sim(this->machine,new_state,GeneralChainTape(new_tape,min_val));
+    GeneralChainTape initial_tape(new_tape,min_val);
+    GeneralSimulator gen_sim(this->machine,new_state,initial_tape);
 
     int max_offset_touched[2]={0,0};
     // Run the simulator
@@ -103,6 +115,46 @@ std::optional<bool> ProofSystem::prove_rule(
         }
         gen_sim.step();
         // After step: Record the block behind us (which we just wrote to).
+        if (int wrote_offset=gen_sim.tape.tape[!gen_sim.tape.dir].back().id; wrote_offset) {
+            max_offset_touched[!gen_sim.tape.dir]=
+                std::max(max_offset_touched[!gen_sim.tape.dir],wrote_offset);
+        }
+        if (gen_sim.op_state!=RUNNING) return std::nullopt;
+        // Update min_val for each expression.
+        for (Dir dir:{LEFT,RIGHT}) {
+            for (auto& block:gen_sim.tape.tape[dir]) {
+                if (block.num.var.size()==0) {}
+                else if (block.num.var.size()==1 && block.num.var.begin()->second.num==mpz1) {
+                    int x=block.num.var.begin()->first;
+                    min_val[x]=std::min(min_val[x],block.num.num);
+                }
+                else return std::nullopt; // shouldn't happen (yet)
+            }
+        }
     }
+    // Make sure finishing tape has the same stripped config as original.
+    StrippedConfig gen_stripped_config=gen_strip_config(gen_sim.state,gen_sim.tape);
+    if (gen_stripped_config!=stripped_config) return std::nullopt;
+    // assume is_diff_rule = true, is_meta_rule = false
+    // Tighten up rule to be as general as possible
+    // (e.g. by replacing x+5 with x+1 if the rule holds for 1).
+    for (Dir dir:{LEFT,RIGHT}) {
+        assert(initial_tape.tape[dir].size()==gen_sim.tape.tape[dir].size());
+        for (int i=0; i<initial_tape.tape[dir].size(); i++) {
+            auto& init_block=initial_tape.tape[dir][i];
+            auto& fini_block=gen_sim.tape.tape[dir][i];
+            assert(init_block.num.var==fini_block.num.var); // this can fail. todo: find a tm that triggers this
+            if (!init_block.num.var.empty()) {
+                int x=init_block.num.var.begin()->first;
+                init_block.num.num=init_block.num.num-min_val[x]+1;
+                fini_block.num.num=fini_block.num.num-min_val[x]+1;
+            }
+        }
+    }
+    // Fix num_steps.
+    for (auto& p:gen_sim.step_num.var) {
+        gen_sim.step_num.num=gen_sim.step_num.num-(min_val[p.first]-1)*p.second;
+    }
+    // todo: make a Diff_Rule
     return std::nullopt;
 }

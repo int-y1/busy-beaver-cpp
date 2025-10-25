@@ -51,8 +51,10 @@ struct GeneralSimulator {
     std::string inf_reason; // doesn't need to be enum yet
 
     // todo: support other machines
-    GeneralSimulator(BacksymbolMacroMachine *machine,int state,GeneralChainTape tape);
+    GeneralSimulator(BacksymbolMacroMachine *machine,int state,const GeneralChainTape& tape);
 
     // Perform an atomic transition or chain step.
     void step();
+
+    void print_self() const;
 };

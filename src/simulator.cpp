@@ -87,7 +87,7 @@ void Simulator::print_self(bool full) const {
     std::cout<<"Rule moves: "<<this->num_rule_moves<<"\n";
 }
 
-GeneralSimulator::GeneralSimulator(BacksymbolMacroMachine *machine,int state,GeneralChainTape tape) :
+GeneralSimulator::GeneralSimulator(BacksymbolMacroMachine *machine,int state,const GeneralChainTape& tape) :
     machine{machine},
     state{state},
     dir{tape.dir},
@@ -132,4 +132,11 @@ void GeneralSimulator::step() {
         this->step_num=this->step_num+trans.num_base_steps;
     }
     else assert(0); // unreachable?
+}
+
+void GeneralSimulator::print_self() const {
+    std::cout<<"\n";
+    this->tape.print_with_state(this->machine->head_to_string(this->state,this->dir),this->machine->symbol_to_string());
+    std::cout<<"Total steps: "<<this->step_num.to_string()<<"\n";
+    std::cout<<"Loops: "<<this->num_loops<<"\n";
 }

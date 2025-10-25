@@ -42,7 +42,7 @@ struct ProofSystem {
     std::map<StrippedConfig,PastConfig> past_configs;
     std::map<std::string,bool> rules; // todo: find correct type
     // a lot of num_* variables, are they actually needed?
-    int num_failed_proofs=0;
+    long long num_failed_proofs=0;
 
     ProofSystem(BacksymbolMacroMachine *machine); // todo: support other machines
 

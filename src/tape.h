@@ -37,6 +37,8 @@ struct GeneralRepeatedSymbol {
     int id;
     int symbol;
     VarPlusXInteger num; // todo: this causes ".num.num.num" chain in the code
+
+    std::string to_string(std::function<std::string(int)> symbol_to_string) const;
 };
 
 struct GeneralChainTape {
@@ -59,4 +61,6 @@ struct GeneralChainTape {
 
     // Apply a single macro step. del old symbol, push new one.
     void apply_single_move(int new_symbol,Dir new_dir);
+
+    void print_with_state(std::string head,std::function<std::string(int)> symbol_to_string) const;
 };

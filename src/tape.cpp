@@ -85,6 +85,13 @@ void ChainTape::print_with_state(std::string head,std::function<std::string(int)
     std::cout<<"Total blocks: "<<blocks.to_string()<<"\n";
 }
 
+std::string GeneralRepeatedSymbol::to_string(std::function<std::string(int)> symbol_to_string) const {
+    std::string s=symbol_to_string(this->symbol);
+    s+="^";
+    s+=this->num.to_string();
+    return s;
+}
+
 // Generalize, eg. (abc)^5 -> (abc)^(n+5)
 // Blocks with one rep are not generalized, eg. (abc)^1 -> (abc)^1
 VarPlusXInteger get_general_num(const XInteger& num,std::map<int,XInteger>& min_val) {
@@ -140,8 +147,19 @@ void GeneralChainTape::apply_single_move(int new_symbol,Dir new_dir) {
         // If it is identical to the top symbol, combine them.
         if (top.symbol==new_symbol) top.num=top.num+1;
         // Otherwise, just add it separately.
-        else half_tape.push_back({new_symbol,1});
+        else half_tape.push_back({0,new_symbol,{{},mpz1}});
     }
     // Update direction
     this->dir=new_dir;
+}
+
+void GeneralChainTape::print_with_state(std::string head,std::function<std::string(int)> symbol_to_string) const {
+    for (auto &sym:this->tape[0]) {
+        std::cout<<sym.to_string(symbol_to_string)<<" ";
+    }
+    std::cout<<head;
+    for (auto it=this->tape[1].rbegin(); it!=this->tape[1].rend(); ++it) {
+        std::cout<<" "<<it->to_string(symbol_to_string);
+    }
+    std::cout<<"\n";
 }
