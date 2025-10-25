@@ -3,7 +3,7 @@
 #include <chrono>
 #include <iostream>
 
-Simulator::Simulator(BacksymbolMacroMachine *machine) :
+Simulator::Simulator(BacksymbolMacroMachine* machine) :
     machine{machine},
     state{machine->init_state},
     dir{machine->init_dir},
@@ -87,7 +87,7 @@ void Simulator::print_self(bool full) const {
     std::cout<<"Rule moves: "<<this->num_rule_moves<<"\n";
 }
 
-GeneralSimulator::GeneralSimulator(BacksymbolMacroMachine *machine,int state,const GeneralChainTape& tape) :
+GeneralSimulator::GeneralSimulator(BacksymbolMacroMachine* machine,int state,const GeneralChainTape& tape) :
     machine{machine},
     state{state},
     dir{tape.dir},

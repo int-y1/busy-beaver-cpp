@@ -15,8 +15,8 @@ XInteger ChainTape::apply_chain_move(int new_symbol) {
     if (num.is_inf()) return num;
     this->tape[this->dir].pop_back();
     // Push on new one behind us
-    std::vector<RepeatedSymbol> &half_tape=this->tape[!this->dir];
-    RepeatedSymbol &top=half_tape.back();
+    std::vector<RepeatedSymbol>& half_tape=this->tape[!this->dir];
+    RepeatedSymbol& top=half_tape.back();
     if (top.symbol==new_symbol) top.num=top.num+num;
     else half_tape.push_back({new_symbol,num});
     return num;
@@ -25,8 +25,8 @@ XInteger ChainTape::apply_chain_move(int new_symbol) {
 void ChainTape::apply_single_move(int new_symbol,Dir new_dir) {
     {
         // Delete old symbol
-        std::vector<RepeatedSymbol> &half_tape=this->tape[this->dir];
-        RepeatedSymbol &top=half_tape.back();
+        std::vector<RepeatedSymbol>& half_tape=this->tape[this->dir];
+        RepeatedSymbol& top=half_tape.back();
         // Decrement (delete one symbol)
         top.num=top.num-1; // yes i can decrement infinity. it is ok.
         // If there are none left, remove from the tape
@@ -34,8 +34,8 @@ void ChainTape::apply_single_move(int new_symbol,Dir new_dir) {
     }
     {
         // Push new symbol
-        std::vector<RepeatedSymbol> &half_tape=this->tape[!new_dir];
-        RepeatedSymbol &top=half_tape.back();
+        std::vector<RepeatedSymbol>& half_tape=this->tape[!new_dir];
+        RepeatedSymbol& top=half_tape.back();
         // If it is identical to the top symbol, combine them.
         if (top.symbol==new_symbol) top.num=top.num+1;
         // Otherwise, just add it separately.
@@ -49,7 +49,7 @@ const int CUTOFF=3; // todo: increase to 30
 void ChainTape::print_with_state(std::string head,std::function<std::string(int)> symbol_to_string,bool full) const {
     XInteger blocks{0};
     if (full) {
-        for (auto &sym:this->tape[0]) {
+        for (auto& sym:this->tape[0]) {
             if (!sym.num.is_inf()) blocks=blocks+sym.num;
             std::cout<<sym.to_string(symbol_to_string)<<" ";
         }
@@ -57,7 +57,7 @@ void ChainTape::print_with_state(std::string head,std::function<std::string(int)
     else {
         int cnt=this->tape[0].size();
         int i=0;
-        for (auto &sym:this->tape[0]) {
+        for (auto& sym:this->tape[0]) {
             if (!sym.num.is_inf()) blocks=blocks+sym.num;
             if (i<CUTOFF || cnt<=i+CUTOFF) std::cout<<sym.to_string(symbol_to_string)<<" ";
             if (i==CUTOFF-1 && cnt>2*CUTOFF) std::cout<<"... ";
@@ -105,7 +105,7 @@ GeneralChainTape::GeneralChainTape(const ChainTape& chain_tape,std::map<int,XInt
     dir{chain_tape.dir} {
         for (Dir direction:{LEFT,RIGHT}) {
             int offset=chain_tape.tape[direction].size();
-            for (auto &block:chain_tape.tape[direction]) {
+            for (auto& block:chain_tape.tape[direction]) {
                 // Mark all starting blocks with IDs to indicate their offset from the
                 // starting TM head. If we allow Limited_Diff_Rules, then we will use
                 // this to detect which blocks were touched.
@@ -123,8 +123,8 @@ VarPlusXInteger GeneralChainTape::apply_chain_move(int new_symbol) {
     if (num.num.is_inf()) return num;
     this->tape[this->dir].pop_back();
     // Push on new one behind us
-    std::vector<GeneralRepeatedSymbol> &half_tape=this->tape[!this->dir];
-    GeneralRepeatedSymbol &top=half_tape.back();
+    std::vector<GeneralRepeatedSymbol>& half_tape=this->tape[!this->dir];
+    GeneralRepeatedSymbol& top=half_tape.back();
     if (top.symbol==new_symbol) top.num=top.num+num;
     else half_tape.push_back({0,new_symbol,num});
     return num;
@@ -133,8 +133,8 @@ VarPlusXInteger GeneralChainTape::apply_chain_move(int new_symbol) {
 void GeneralChainTape::apply_single_move(int new_symbol,Dir new_dir) {
     {
         // Delete old symbol
-        std::vector<GeneralRepeatedSymbol> &half_tape=this->tape[this->dir];
-        GeneralRepeatedSymbol &top=half_tape.back();
+        std::vector<GeneralRepeatedSymbol>& half_tape=this->tape[this->dir];
+        GeneralRepeatedSymbol& top=half_tape.back();
         // Decrement (delete one symbol)
         top.num=top.num-1; // yes i can decrement infinity. it is ok.
         // If there are none left, remove from the tape
@@ -142,8 +142,8 @@ void GeneralChainTape::apply_single_move(int new_symbol,Dir new_dir) {
     }
     {
         // Push new symbol
-        std::vector<GeneralRepeatedSymbol> &half_tape=this->tape[!new_dir];
-        GeneralRepeatedSymbol &top=half_tape.back();
+        std::vector<GeneralRepeatedSymbol>& half_tape=this->tape[!new_dir];
+        GeneralRepeatedSymbol& top=half_tape.back();
         // If it is identical to the top symbol, combine them.
         if (top.symbol==new_symbol) top.num=top.num+1;
         // Otherwise, just add it separately.
@@ -154,7 +154,7 @@ void GeneralChainTape::apply_single_move(int new_symbol,Dir new_dir) {
 }
 
 void GeneralChainTape::print_with_state(std::string head,std::function<std::string(int)> symbol_to_string) const {
-    for (auto &sym:this->tape[0]) {
+    for (auto& sym:this->tape[0]) {
         std::cout<<sym.to_string(symbol_to_string)<<" ";
     }
     std::cout<<head;

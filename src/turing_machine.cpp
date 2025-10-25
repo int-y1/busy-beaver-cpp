@@ -3,7 +3,7 @@
 #include <tuple>
 
 SimpleMachine tmFromQuintuples(
-    const std::vector<std::tuple<int,int,int,Dir,int>> &quints,
+    const std::vector<std::tuple<int,int,int,Dir,int>>& quints,
     int num_states,
     int num_symbols
 ) {
@@ -16,7 +16,7 @@ SimpleMachine tmFromQuintuples(
         }
     }
     // Set all defined transitions.
-    for (auto &[state_in,symbol_in,symbol_out,dir_out,state_out] : quints) {
+    for (auto& [state_in,symbol_in,symbol_out,dir_out,state_out] : quints) {
         if (state_out==-1) {
             ttable.at(state_in).at(symbol_in)=
                 {HALT,{symbol_in,state_in},symbol_out,state_out,dir_out,1};
@@ -29,7 +29,7 @@ SimpleMachine tmFromQuintuples(
     return SimpleMachine(ttable,num_states,num_symbols);
 }
 
-SimpleMachine parseTM(const std::string &line) {
+SimpleMachine parseTM(const std::string& line) {
     // Read transition table given a standard text representation.
     std::vector<std::tuple<int,int,int,Dir,int>> quints;
     std::vector<std::string> rows;
@@ -70,7 +70,7 @@ SimpleMachine parseTM(const std::string &line) {
 // Simulate TM on a limited tape segment.
 // Can detect HALT and INF_REPEAT. Used by Macro Machines.
 std::pair<Transition,std::vector<int>> sim_limited(
-    TuringMachine &tm,
+    TuringMachine& tm,
     int state,
     std::vector<int> tape,
     Dir dir,

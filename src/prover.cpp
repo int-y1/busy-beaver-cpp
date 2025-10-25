@@ -1,23 +1,23 @@
 #include "prover.h"
 #include "simulator.h"
 
-StrippedSymbol stripped_info(const RepeatedSymbol &block) {
+StrippedSymbol stripped_info(const RepeatedSymbol& block) {
     return {block.symbol,block.num.num==mpz1};
 }
 
-StrippedSymbol gen_stripped_info(const GeneralRepeatedSymbol &block) {
+StrippedSymbol gen_stripped_info(const GeneralRepeatedSymbol& block) {
     return {block.symbol,block.num.var.empty() && block.num.num.num==mpz1};
 }
 
 // Return a generalized configuration removing the non-1 repetition counts from the tape.
-StrippedConfig strip_config(int state,const ChainTape &tape) {
+StrippedConfig strip_config(int state,const ChainTape& tape) {
     std::vector<StrippedSymbol> s0,s1;
     std::transform(tape.tape[0].begin(),tape.tape[0].end(),std::back_inserter(s0),stripped_info);
     std::transform(tape.tape[1].begin(),tape.tape[1].end(),std::back_inserter(s1),stripped_info);
     return {state,tape.dir,s0,s1};
 }
 
-StrippedConfig gen_strip_config(int state,const GeneralChainTape &tape) {
+StrippedConfig gen_strip_config(int state,const GeneralChainTape& tape) {
     std::vector<StrippedSymbol> s0,s1;
     std::transform(tape.tape[0].begin(),tape.tape[0].end(),std::back_inserter(s0),gen_stripped_info);
     std::transform(tape.tape[1].begin(),tape.tape[1].end(),std::back_inserter(s1),gen_stripped_info);
@@ -47,13 +47,13 @@ bool PastConfig::log_config(long long loop_num) {
     return 1;
 }
 
-ProofSystem::ProofSystem(BacksymbolMacroMachine *machine) :
+ProofSystem::ProofSystem(BacksymbolMacroMachine* machine) :
     machine{machine} {}
 
 // Log this configuration into the memory and check if it is similar to a
 // past one. Apply rule if possible.
 ProverResult ProofSystem::log_and_apply(
-    const ChainTape &tape, int state, const XInteger &step_num, long long loop_num
+    const ChainTape& tape, int state, const XInteger& step_num, long long loop_num
 ) {
     return ProverResultNothingToDo{}; // todo: remove when ready
     if (tape.tape[0].size()+tape.tape[1].size()>50) {
@@ -74,7 +74,8 @@ ProverResult ProofSystem::log_and_apply(
         auto rule=this->prove_rule(stripped_config,full_config,loop_num-past_config.last_loop_num);
         if (!rule.has_value()) this->num_failed_proofs++;
         else {
-            // add_rule
+            this->add_rule(rule.value(),stripped_config);
+            // todo: i think "Try to apply transition" is redundant. investigate later.
         }
     }
 
@@ -82,16 +83,20 @@ ProverResult ProofSystem::log_and_apply(
 }
 
 std::optional<ProverResult> ProofSystem::try_apply_a_rule(
-    const StrippedConfig &stripped_config,const FullConfig &full_config
+    const StrippedConfig& stripped_config,const FullConfig& full_config
 ) {
     return std::nullopt;
 }
 
-std::optional<bool> ProofSystem::prove_rule(
-    const StrippedConfig &stripped_config,const FullConfig &full_config,long long delta_loop
+void ProofSystem::add_rule(const DiffRule& diff_rule,const StrippedConfig& stripped_config) {
+    //
+}
+
+std::optional<DiffRule> ProofSystem::prove_rule(
+    const StrippedConfig& stripped_config,const FullConfig& full_config,long long delta_loop
 ) {
     // Unpack configurations
-    auto &[new_state,new_tape,new_loop_num]=full_config;
+    auto& [new_state,new_tape,new_loop_num]=full_config;
     std::map<int,XInteger> min_val; // Notes the minimum value exponents with each unknown take.
     // Create the limited simulator with limited or no prover.
     GeneralChainTape initial_tape(new_tape,min_val);
@@ -155,6 +160,5 @@ std::optional<bool> ProofSystem::prove_rule(
     for (auto& p:gen_sim.step_num.var) {
         gen_sim.step_num.num=gen_sim.step_num.num-(min_val[p.first]-1)*p.second;
     }
-    // todo: make a Diff_Rule
-    return std::nullopt;
+    return DiffRule{initial_tape,gen_sim.tape,new_state,gen_sim.step_num,gen_sim.num_loops};
 }

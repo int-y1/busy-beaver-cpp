@@ -5,7 +5,7 @@
 #include "x_integer.h"
 
 struct Simulator {
-    BacksymbolMacroMachine *machine; // todo: support other machines
+    BacksymbolMacroMachine* machine; // todo: support other machines
     int state;
     Dir dir;
 
@@ -24,7 +24,7 @@ struct Simulator {
     long long num_loops=0,num_macro_moves=0,num_chain_moves=0,num_rule_moves=0;
     std::string inf_reason; // doesn't need to be enum yet
 
-    Simulator(BacksymbolMacroMachine *machine); // todo: support other machines
+    Simulator(BacksymbolMacroMachine* machine); // todo: support other machines
 
     // Perform an atomic transition or chain step.
     void step();
@@ -34,7 +34,7 @@ struct Simulator {
 
 // a version of Simulator used by gen_sim in ProofSystem.prove_rule
 struct GeneralSimulator {
-    BacksymbolMacroMachine *machine; // todo: support other machines
+    BacksymbolMacroMachine* machine; // todo: support other machines
     int state;
     Dir dir;
 
@@ -51,7 +51,7 @@ struct GeneralSimulator {
     std::string inf_reason; // doesn't need to be enum yet
 
     // todo: support other machines
-    GeneralSimulator(BacksymbolMacroMachine *machine,int state,const GeneralChainTape& tape);
+    GeneralSimulator(BacksymbolMacroMachine* machine,int state,const GeneralChainTape& tape);
 
     // Perform an atomic transition or chain step.
     void step();

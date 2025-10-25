@@ -34,26 +34,35 @@ struct PastConfig {
     bool log_config(long long loop_num);
 };
 
+struct DiffRule {
+    GeneralChainTape init_tape,fini_tape;
+    int state; // both start and stop state
+    VarPlusXInteger num_steps;
+    long long num_loops;
+};
+
 // Stores past information, looks for patterns and tries to prove general
 // rules when it finds patterns.
 struct ProofSystem {
     // only options.compute_steps is true
-    BacksymbolMacroMachine *machine; // todo: support other machines
+    BacksymbolMacroMachine* machine; // todo: support other machines
     std::map<StrippedConfig,PastConfig> past_configs;
-    std::map<std::string,bool> rules; // todo: find correct type
-    // a lot of num_* variables, are they actually needed?
+    std::map<std::string,DiffRule> rules; // todo: find correct type
+    // a lot of other num_* variables that i don't need
     long long num_failed_proofs=0;
 
-    ProofSystem(BacksymbolMacroMachine *machine); // todo: support other machines
+    ProofSystem(BacksymbolMacroMachine* machine); // todo: support other machines
 
     ProverResult log_and_apply(
-        const ChainTape &tape,int state,const XInteger &step_num,long long loop_num);
+        const ChainTape& tape,int state,const XInteger& step_num,long long loop_num);
 
     std::optional<ProverResult> try_apply_a_rule(
-        const StrippedConfig &stripped_config,const FullConfig &full_config);
+        const StrippedConfig& stripped_config,const FullConfig& full_config);
+
+    void add_rule(const DiffRule& diff_rule,const StrippedConfig& stripped_config);
 
     // Try to prove a general rule based upon specific example.
     // Returns rule if successful or nullopt.
-    std::optional<bool> prove_rule(
-        const StrippedConfig &stripped_config,const FullConfig &full_config,long long delta_loop);
+    std::optional<DiffRule> prove_rule(
+        const StrippedConfig& stripped_config,const FullConfig& full_config,long long delta_loop);
 };

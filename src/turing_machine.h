@@ -10,7 +10,7 @@ struct TuringMachine {
     int num_symbols;
     TuringMachine(int num_states,int num_symbols) :
         num_states{num_states}, num_symbols{num_symbols} {}
-    virtual const Transition &get_trans_object(int symbol_in,int state_in,Dir dir)=0;
+    virtual const Transition& get_trans_object(int symbol_in,int state_in,Dir dir)=0;
 };
 
 // The most general Turing Machine based off of a transition table
@@ -28,13 +28,13 @@ struct SimpleMachine : public TuringMachine {
             for (int i=0; i<num_states; i++) symbol_to_string.push_back({(char)('0'+i)});
         }
 
-    const Transition &get_trans_object(int symbol_in,int state_in,Dir dir) {
+    const Transition& get_trans_object(int symbol_in,int state_in,Dir dir) {
         return this->ttable.at(state_in).at(symbol_in);
     }
 };
 
 // Parse TMs in standard text format.
-SimpleMachine parseTM(const std::string &line);
+SimpleMachine parseTM(const std::string& line);
 
 // A derivative Turing Machine which simulates another machine clumping k-symbols together into a block-symbol
 struct BlockMacroMachine : public TuringMachine {

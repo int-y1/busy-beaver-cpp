@@ -14,10 +14,10 @@ struct XInteger {
 
     bool is_inf() const {return !num.has_value();}
 
-    bool operator==(const XInteger &other) const {
+    bool operator==(const XInteger& other) const {
         return this->num==other.num;
     }
-    bool operator<(const XInteger &other) const {
+    bool operator<(const XInteger& other) const {
         if (this->is_inf()) return false;
         if (other.is_inf()) return true;
         return this->num.value()<other.num.value();
@@ -26,7 +26,7 @@ struct XInteger {
         if (this->is_inf()) return {};
         return {this->num.value()+other};
     }
-    XInteger operator+(const XInteger &other) const {
+    XInteger operator+(const XInteger& other) const {
         if (this->is_inf()) return {};
         if (other.is_inf()) return {};
         return {this->num.value()+other.num.value()};
@@ -36,7 +36,7 @@ struct XInteger {
         if (this->num.value()<other) assert(0);
         return {this->num.value()-other};
     }
-    XInteger operator-(const XInteger &other) const {
+    XInteger operator-(const XInteger& other) const {
         if (other.is_inf()) assert(0);
         if (this->is_inf()) return {};
         if (this->num.value()<other.num.value()) assert(0);
@@ -47,7 +47,7 @@ struct XInteger {
         if (this->is_inf()) return {};
         return {this->num.value()*other};
     }
-    XInteger operator*(const XInteger &other) const {
+    XInteger operator*(const XInteger& other) const {
         if (this->num==mpz0 || other.num==mpz0) return {mpz0};
         if (this->is_inf()) return {};
         if (other.is_inf()) return {};
@@ -72,22 +72,22 @@ struct VarPlusXInteger {
         return {this->var,this->num-other};
     }
 
-    VarPlusXInteger operator+(const XInteger &other) const {
+    VarPlusXInteger operator+(const XInteger& other) const {
         return {this->var,this->num+other};
     }
 
-    VarPlusXInteger operator+(const VarPlusXInteger &other) const {
+    VarPlusXInteger operator+(const VarPlusXInteger& other) const {
         std::map<int,XInteger> var2=this->var;
-        for (auto &p:other.var) {
+        for (auto& p:other.var) {
             if (auto it=var2.find(p.first); it!=var2.end()) it->second=it->second+p.second;
             else var2[p.first]=p.second;
         }
         return {var2,this->num+other.num};
     }
 
-    VarPlusXInteger operator*(const XInteger &other) const {
+    VarPlusXInteger operator*(const XInteger& other) const {
         std::map<int,XInteger> var2=this->var;
-        for (auto &p:var2) p.second=p.second*other;
+        for (auto& p:var2) p.second=p.second*other;
         return {var2,this->num*other};
     }
 
