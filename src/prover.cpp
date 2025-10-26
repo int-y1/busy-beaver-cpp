@@ -85,11 +85,21 @@ ProverResult ProofSystem::log_and_apply(
 std::optional<ProverResult> ProofSystem::try_apply_a_rule(
     const StrippedConfig& stripped_config,const FullConfig& full_config
 ) {
-    return std::nullopt;
+    auto it=this->rules.find(stripped_config);
+    if (it==this->rules.end()) return std::nullopt;
+    std::optional<ProverResult> res=this->apply_diff_rule(it->second,full_config);
+    if (!res.has_value()) return ProverResultNothingToDo{};
+    it->second.num_uses++;
+    return res;
 }
 
 void ProofSystem::add_rule(const DiffRule& diff_rule,const StrippedConfig& stripped_config) {
-    //
+    // Remember rule.
+    assert(!this->rules.count(stripped_config));
+    this->rules.emplace(stripped_config,diff_rule);
+    // Clear our memory. We cannot use it for future rules because the
+    // number of steps will be wrong now that we have proven this rule.
+    this->past_configs.clear();
 }
 
 std::optional<DiffRule> ProofSystem::prove_rule(
@@ -161,4 +171,39 @@ std::optional<DiffRule> ProofSystem::prove_rule(
         gen_sim.step_num.num=gen_sim.step_num.num-(min_val[p.first]-1)*p.second;
     }
     return DiffRule{initial_tape,gen_sim.tape,new_state,gen_sim.step_num,gen_sim.num_loops};
+}
+
+std::optional<ProverResult> ProofSystem::apply_diff_rule(
+    const DiffRule& rule,const FullConfig& start_config
+) {
+    XInteger num_reps={}; // Calculate number of repetitions allowable.
+    for (Dir dir:{LEFT,RIGHT}) {
+        assert(rule.init_tape.tape[dir].size()==rule.fini_tape.tape[dir].size());
+        assert(rule.init_tape.tape[dir].size()==std::get<1>(start_config).tape[dir].size());
+        for (int i=0; i<rule.init_tape.tape[dir].size(); i++) {
+            auto& init_block=rule.init_tape.tape[dir][i];
+            auto& fini_block=rule.fini_tape.tape[dir][i];
+            auto& start_block=std::get<1>(start_config).tape[dir][i];
+            // The constant term in init_block.num represents the minimum required value.
+            if (init_block.num.var.empty()) {
+                assert(init_block.num.num.is_inf() || init_block.num.num==XInteger{mpz1});
+                continue;
+            }
+            // Calculate the initial and change in value for each variable.
+            assert(init_block.num.var.size()==1);
+            assert(init_block.num.var.begin()->second==XInteger{mpz1});
+            assert(init_block.num.var==fini_block.num.var);
+            int x=init_block.num.var.begin()->first;
+            if (start_block.num<init_block.num.num) return std::nullopt;
+            if (fini_block.num.num<init_block.num.num) {
+                num_reps=std::min(num_reps,(start_block.num-init_block.num.num)/(init_block.num.num-fini_block.num.num)+1);
+            }
+        }
+    }
+    // If none of the diffs are negative, this will repeat forever.
+    if (num_reps.is_inf()) return ProverResultInfRepeat{};
+    // If we cannot even apply this transition once, we're done.
+    assert(!(num_reps==XInteger{mpz0}));
+    // Determine number of base steps taken by applying rule.
+    return std::nullopt;
 }

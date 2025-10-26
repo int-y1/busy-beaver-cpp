@@ -34,11 +34,13 @@ struct PastConfig {
     bool log_config(long long loop_num);
 };
 
+// todo: could implement LimitedDiffRule
 struct DiffRule {
     GeneralChainTape init_tape,fini_tape;
-    int state; // both start and stop state
+    int state; // both start and stop state. may be redundant due to ProofSystem.rules
     VarPlusXInteger num_steps;
     long long num_loops;
+    long long num_uses=0; // Number of times this rule has been applied.
 };
 
 // Stores past information, looks for patterns and tries to prove general
@@ -47,7 +49,7 @@ struct ProofSystem {
     // only options.compute_steps is true
     BacksymbolMacroMachine* machine; // todo: support other machines
     std::map<StrippedConfig,PastConfig> past_configs;
-    std::map<std::string,DiffRule> rules; // todo: find correct type
+    std::map<StrippedConfig,DiffRule> rules;
     // a lot of other num_* variables that i don't need
     long long num_failed_proofs=0;
 
@@ -59,10 +61,13 @@ struct ProofSystem {
     std::optional<ProverResult> try_apply_a_rule(
         const StrippedConfig& stripped_config,const FullConfig& full_config);
 
+    // Add a proven rule
     void add_rule(const DiffRule& diff_rule,const StrippedConfig& stripped_config);
 
     // Try to prove a general rule based upon specific example.
     // Returns rule if successful or nullopt.
     std::optional<DiffRule> prove_rule(
         const StrippedConfig& stripped_config,const FullConfig& full_config,long long delta_loop);
+
+    std::optional<ProverResult> apply_diff_rule(const DiffRule& rule,const FullConfig& start_config);
 };

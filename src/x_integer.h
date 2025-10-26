@@ -53,6 +53,11 @@ struct XInteger {
         if (other.is_inf()) return {};
         return {this->num.value()*other.num.value()};
     }
+    XInteger operator/(const XInteger& other) const {
+        if (other.is_inf() || other.num==mpz0) assert(0);
+        if (this->is_inf()) return {};
+        return {this->num.value()/other.num.value()};
+    }
 
     std::string to_string() const {
         if (this->is_inf()) return "inf";
