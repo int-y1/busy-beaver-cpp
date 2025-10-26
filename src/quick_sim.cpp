@@ -14,7 +14,7 @@ void run(
     BacksymbolMacroMachine machine3(machine2);
     Simulator sim(&machine3);
     sim.print_self();
-    long long next_print=10000000;
+    long long next_print=100000;
     for(long long total_loops=0; sim.op_state==RUNNING; total_loops++) {
         sim.step();
         if (sim.num_loops>=next_print) {

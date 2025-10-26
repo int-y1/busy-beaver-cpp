@@ -55,7 +55,6 @@ ProofSystem::ProofSystem(BacksymbolMacroMachine* machine) :
 ProverResult ProofSystem::log_and_apply(
     const ChainTape& tape, int state, const XInteger& step_num, long long loop_num
 ) {
-    return ProverResultNothingToDo{}; // todo: remove when ready
     if (tape.tape[0].size()+tape.tape[1].size()>50) {
         return ProverResultNothingToDo{}; // todo: prove rules about big tapes
     }
@@ -177,6 +176,7 @@ std::optional<ProverResult> ProofSystem::apply_diff_rule(
     const DiffRule& rule,const FullConfig& start_config
 ) {
     XInteger num_reps={}; // Calculate number of repetitions allowable.
+    std::map<int,XInteger> init0_value,init1_value;
     for (Dir dir:{LEFT,RIGHT}) {
         assert(rule.init_tape.tape[dir].size()==rule.fini_tape.tape[dir].size());
         assert(rule.init_tape.tape[dir].size()==std::get<1>(start_config).tape[dir].size());
@@ -198,6 +198,9 @@ std::optional<ProverResult> ProofSystem::apply_diff_rule(
             if (fini_block.num.num<init_block.num.num) {
                 num_reps=std::min(num_reps,(start_block.num-init_block.num.num)/(init_block.num.num-fini_block.num.num)+1);
             }
+            init0_value[x]=start_block.num-init_block.num.num;
+            // num_reps=1 causes assert fail due to negative numbers. avoid this.
+            if (XInteger{mpz1}<num_reps) init1_value[x]=(init0_value[x]+fini_block.num.num)-init_block.num.num;
         }
     }
     // If none of the diffs are negative, this will repeat forever.
@@ -205,5 +208,25 @@ std::optional<ProverResult> ProofSystem::apply_diff_rule(
     // If we cannot even apply this transition once, we're done.
     assert(!(num_reps==XInteger{mpz0}));
     // Determine number of base steps taken by applying rule.
-    return std::nullopt;
+    // Proof_System.py didn't really help. write the code myself.
+    // i=num_reps, j=init0_step, k=init1_step
+    // total steps = (k*(i-1) + j*3 - j*i)*i/2, written to avoid negative numbers
+    XInteger diff_steps=rule.num_steps.substitute(init0_value);
+    if (XInteger{mpz1}<num_reps) {
+        XInteger init1_step=rule.num_steps.substitute(init1_value);
+        diff_steps=(init1_step*(num_reps-1)+diff_steps*3-diff_steps*num_reps)*num_reps/2;
+    }
+    // Alter the tape to account for applying rule.
+    ChainTape return_tape=std::get<1>(start_config);
+    for (Dir dir:{LEFT,RIGHT}) {
+        for (int i=0; i<rule.init_tape.tape[dir].size(); i++) {
+            auto& return_block=return_tape.tape[dir][i];
+            if (return_block.num.is_inf()) continue;
+            auto& init_block=rule.init_tape.tape[dir][i];
+            auto& fini_block=rule.fini_tape.tape[dir][i];
+            return_block.num=return_block.num+fini_block.num.num*num_reps-init_block.num.num*num_reps;
+        }
+    }
+    // Return the pertinent info
+    return ProverResultApplyRule{return_tape,diff_steps};
 }

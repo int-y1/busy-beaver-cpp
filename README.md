@@ -30,7 +30,7 @@ TM that halts in 987522842126 steps:
 ./quick_sim 1RB2LA1RA_1RC2RB0RC_1LA1RZ1LA 2
 ```
 
-`./quick_sim` took ~590ms. `Quick_Sim.py` took ~14s.
+`./quick_sim` took ~1ms. `Quick_Sim.py` took ~1ms. This is too fast to be a good benchmark.
 
 ## Example 3
 
@@ -39,4 +39,6 @@ TM that halts in ~10^1311493 steps:
 ./quick_sim 1RB---_1RC1RB_1RD0RA_1LE0RC_0LF0LD_1LB0LF 4
 ```
 
-`./quick_sim` cannot do this yet. `Quick_Sim.py` took several hours.
+`./quick_sim` hasn't run to completion yet. `Quick_Sim.py` took several hours.
+
+Initial benchmarks show that `./quick_sim` might be 8x faster than `Quick_Sim.py`.
