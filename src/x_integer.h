@@ -1,16 +1,104 @@
 #pragma once
 #include <cassert>
-#include <gmpxx.h>
+#include <flint/fmpz.h>
 #include <map>
 #include <optional>
+#include <string>
 
-// because mpz0 is faster than 0_mpz. i have no idea why.
-inline const mpz_class mpz0=0_mpz, mpz1=1_mpz;
+struct fmpz_class {
+    fmpz_t num;
+
+    // rule of 3
+    fmpz_class() {fmpz_init(num);}
+    fmpz_class(slong x) {fmpz_init_set_si(num,x);}
+private:
+    fmpz_class(fmpz_t x): num{x[0]} {}
+public:
+    ~fmpz_class() {fmpz_clear(num);}
+    fmpz_class(const fmpz_class& other) {fmpz_init_set(num,other.num);}
+    fmpz_class& operator=(const fmpz_class& other) {
+        fmpz_set(num,other.num);
+        return *this;
+    }
+    // actually, i want rule of 5
+    fmpz_class(fmpz_class&& other) noexcept {
+        fmpz_init(num);
+        fmpz_swap(num,other.num);
+    }
+    fmpz_class& operator=(fmpz_class&& other) noexcept {
+        fmpz_swap(num,other.num);
+        return *this;
+    }
+
+    bool operator==(const fmpz_class& other) const {
+        return fmpz_equal(num,other.num);
+    }
+    bool operator<(const fmpz_class& other) const {
+        return fmpz_cmp(num,other.num)<0;
+    }
+    fmpz_class operator+(const fmpz_class& other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_add(res,num,other.num);
+        return {res};
+    }
+    fmpz_class operator+(slong other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_add_si(res,num,other);
+        return {res};
+    }
+    fmpz_class operator-(const fmpz_class& other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_sub(res,num,other.num);
+        return {res};
+    }
+    fmpz_class operator-(slong other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_sub_si(res,num,other);
+        return {res};
+    }
+    fmpz_class operator*(const fmpz_class& other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_mul(res,num,other.num);
+        return {res};
+    }
+    fmpz_class operator*(slong other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_mul_si(res,num,other);
+        return {res};
+    }
+    fmpz_class operator/(const fmpz_class& other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_fdiv_q(res,num,other.num);
+        return {res};
+    }
+    fmpz_class operator/(slong other) const {
+        fmpz_t res;
+        fmpz_init(res);
+        fmpz_fdiv_q_si(res,num,other);
+        return {res};
+    }
+    std::string get_str() const {
+        char* p=fmpz_get_str(nullptr,10,num);
+        std::string out(p);
+        free(p);
+        return out;
+    }
+};
+
+// speed up access to 0 and 1
+inline const fmpz_class mpz0((slong)0), mpz1((slong)1);
 
 // supports integers of the form: {0,1,2,3,...} U {+inf}
 // for numbers >10^10^8, the memory usage might be too big
 struct XInteger {
-    std::optional<mpz_class> num;
+    std::optional<fmpz_class> num;
 
     bool is_inf() const {return !num.has_value();}
 

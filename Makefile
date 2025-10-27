@@ -1,7 +1,6 @@
 CXX = g++
 CXXFLAGS = -O2 -std=c++20
-# todo: does -lgmpxx do anything?
-LDFLAGS = -lgmp -lgmpxx
+LDFLAGS = -lflint -lgmp
 
 SRCS := $(wildcard src/*.cpp)
 OBJS := $(patsubst src/%.cpp,build/%.o,$(SRCS))

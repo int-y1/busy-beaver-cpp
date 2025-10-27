@@ -4,6 +4,7 @@
 #include "simulator.h"
 #include "turing_machine.h"
 #include <cassert>
+#include <cstring>
 #include <iostream>
 
 void run(
@@ -36,4 +37,5 @@ int main(int argc, char* argv[]) {
     SimpleMachine machine = parseTM(std::string(argv[1],strlen(argv[1])));
     int block_size=std::stoi(argv[2]);
     run(std::move(machine),block_size);
+    flint_cleanup_master(); // this makes valgrind happy. thanks flint.
 }

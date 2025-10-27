@@ -74,7 +74,10 @@ ProverResult ProofSystem::log_and_apply(
         if (!rule.has_value()) this->num_failed_proofs++;
         else {
             this->add_rule(rule.value(),stripped_config);
-            // todo: i think "Try to apply transition" is redundant. investigate later.
+            // Try to apply transition
+            if (auto result=this->try_apply_a_rule(stripped_config,full_config); result.has_value()) {
+                return result.value();
+            }
         }
     }
 
