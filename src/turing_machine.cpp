@@ -161,11 +161,14 @@ const Transition& BlockMacroMachine::get_trans_object(int symbol_in,int state_in
 }
 
 BacksymbolMacroMachine::BacksymbolMacroMachine(BlockMacroMachine base_machine) :
-        TuringMachine(base_machine.num_states*base_machine.num_symbols+1,base_machine.num_symbols),
+        TuringMachine(base_machine.num_states+1,base_machine.num_symbols),
         base_machine{base_machine},
         init_state{base_machine.init_state}, // assume backsymbol = 0
         init_symbol{0}, // assume init_symbol = 0
-        init_dir{base_machine.init_dir} {}
+        init_dir{base_machine.init_dir} {
+    assert(2e9/this->num_symbols/this->num_states>=1); // prevent int overflow in get_trans_object hash.first
+    assert(2e9/this->num_symbols/2>=1); // prevent int overflow in get_trans_object hash.second
+}
 
 std::string BacksymbolMacroMachine::head_to_string(int state,Dir dir) const {
     char base_state;
