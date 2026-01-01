@@ -1,5 +1,6 @@
 #include "prover.h"
 #include "simulator.h"
+#include <algorithm>
 
 StrippedSymbol stripped_info(const RepeatedSymbol& block) {
     return {block.symbol,block.num.num==mpz1};
