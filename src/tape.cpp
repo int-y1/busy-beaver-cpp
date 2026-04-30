@@ -45,7 +45,7 @@ void ChainTape::apply_single_move(int new_symbol,Dir new_dir) {
     this->dir=new_dir;
 }
 
-const int CUTOFF=3; // todo: increase to 30
+const int CUTOFF=30; // how much of the tape to show. todo: make this adjustable?
 void ChainTape::print_with_state(std::string head,std::function<std::string(int)> symbol_to_string,bool full) const {
     XInteger blocks{0};
     if (full) {
@@ -82,7 +82,7 @@ void ChainTape::print_with_state(std::string head,std::function<std::string(int)
         }
     }
     std::cout<<"\n";
-    std::cout<<"Total blocks: "<<blocks.to_string()<<"\n";
+    std::cout<<"Total blocks: "<<blocks.to_string()<<" (compressed: left "<<this->tape[0].size()<<", right "<<this->tape[1].size() << ")\n";
 }
 
 std::string GeneralRepeatedSymbol::to_string(std::function<std::string(int)> symbol_to_string) const {

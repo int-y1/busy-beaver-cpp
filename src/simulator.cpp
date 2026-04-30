@@ -21,7 +21,7 @@ void Simulator::step() {
     // places step() could early-return.
     this->num_loops++;
 
-    if (1) { // todo: switch prover on/off?
+    if (this->prover.past_configs.size()<200000) { // todo: switch prover on/off in a better way
         // Log the configuration in the prover and apply rule if possible.
         ProverResult prover_result=this->prover.log_and_apply(
             this->tape,this->state,this->step_num,this->num_loops-1);
